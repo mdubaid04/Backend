@@ -7,7 +7,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 const registerUser = asyncHandler(async (req, res) => {
   //get user details
   const { username, email, fullname, password } = req.body;
-  console.log(email, fullname);
+  console.log(email, username);
 
   //validation
   if (
@@ -29,7 +29,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   //check if user already exists
   const exsistedUser = await User.findOne({ $or: [{ email }, { username }] });
-  console.log("User Object : ", user);
+  console.log("User Object : ", exsistedUser);
   if (exsistedUser) {
     throw new ApiError(409, "username or email already exsist");
   }
@@ -38,6 +38,8 @@ const registerUser = asyncHandler(async (req, res) => {
   console.log("files Object : ", req.files);
   const avatarLocalPath = req.files?.avatar[0]?.path;
   const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  console.log(avatarLocalPath);
+  console.log(coverImageLocalPath);
 
   if (!avatarLocalPath) {
     throw new ApiError(404, "Avatar Image Not Found");
@@ -51,6 +53,7 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!cloudinaryUrlAvatar) {
     throw new ApiError(500, "Avatar Image Required");
   }
+  console.log("Username : ", username);
 
   //create user
 
@@ -58,9 +61,9 @@ const registerUser = asyncHandler(async (req, res) => {
     fullname,
     password,
     avatar: cloudinaryUrlAvatar,
-    coverImage: coverImage?.cloudinaryUrlCoverImage || "",
+    coverImage: cloudinaryUrlCoverImage ? cloudinaryUrlCoverImage : "",
     email,
-    username: username.lowercase(),
+    username: username.toLowerCase(),
   });
 
   // check for user creation and remove password and refreshToken from response it returns user object with password and refreshToken field

@@ -45,20 +45,19 @@ const userSchema = new Schema(
     },
     refreshToken: {
       type: String,
-      required: true,
     },
   },
   { timestamps: true }
 );
 
-const User = mongoose.model("User", userSchema);
+userSchema.pre("save", async function (t) {
+  // console.log(typeof next);
 
-userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
-    return next(); // If the password is not modified, skip hashing and move to the next middleware
+    return; // If the password is not modified, skip hashing and move to the next middleware  //in async function mongoose automatically handle promise and next() function, so we don't need to call next() explicitly. If we return from the function, it will automatically proceed to the next middleware or save the document.
   }
   this.password = await bcrypt.hash(this.password, 10);
-  next(); // Call the next middleware or save the document
+  // Call the next middleware or save the document
 });
 userSchema.methods.comparePassword = async function (password) {
   return await bcrypt.compare(password, this.password); // Compare the provided password with the hashed password stored in the database and return true if they match, otherwise return false
@@ -89,4 +88,7 @@ userSchema.methods.generateRefreshToken = function () {
     }
   );
 };
+
+const User = mongoose.model("User", userSchema);
+
 export default User;
