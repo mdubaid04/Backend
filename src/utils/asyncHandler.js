@@ -20,4 +20,9 @@ const asyncHandler = (requestHandler) => {
     );
   };
 };
+
+// ye function kewal error ko hi dhhondkr handle krega agar error ni mila to controller response bhej dega
+
+// agar controller async hai to vo hmesha promise hi return krega chahe error aaye ya na aaye  or agar controller async ni hai to vo normal response bhej dega aur promise.resolve use promise me wrap kr dega taki error aaye to catch me jae aur error ni aaye to normal response bhej dega
+//return promise ko koi handle ni krta vo bs ek wrapper hota hai controller res.json ke through response bhej dega
 export { asyncHandler };

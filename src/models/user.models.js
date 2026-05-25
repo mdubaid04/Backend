@@ -63,7 +63,7 @@ userSchema.methods.comparePassword = async function (password) {
   return await bcrypt.compare(password, this.password); // Compare the provided password with the hashed password stored in the database and return true if they match, otherwise return false
 };
 userSchema.methods.generateAccessToken = function () {
-  jwt.sign(
+  return jwt.sign(
     {
       userId: this._id,
       username: this.username,
@@ -77,14 +77,14 @@ userSchema.methods.generateAccessToken = function () {
   );
 };
 userSchema.methods.generateRefreshToken = function () {
-  jwt.sign(
+  return jwt.sign(
     {
       userId: this._id,
       username: this.username,
     },
     process.env.JWT_REFRESH_TOKEN_SECRET_KEY,
     {
-      expiresIn: JWT_REFRESH_TOKEN_EXPIRES_IN || "10d",
+      expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN || "10d",
     }
   );
 };
