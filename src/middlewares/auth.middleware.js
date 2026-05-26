@@ -9,13 +9,13 @@ const verifyJwt = asyncHandler(async (req, _, next) => {
       req.cookies?.accessToken ||
       req.header("Authorization")?.replace("Bearer ", "");
     if (!token) {
-      throw new ApiError(401, "Token Not Found");
+      throw new ApiError(404, "Token Not Found");
     }
     const decoded = await jwt.verify(
       token,
       process.env.JWT_ACCESS_TOKEN_SECRET_KEY
     );
-    console.log(decoded);
+
     if (!decoded) {
       throw new ApiError(401, "Token Is Not Valid");
     }
@@ -23,7 +23,7 @@ const verifyJwt = asyncHandler(async (req, _, next) => {
       "-password -refreshToken"
     );
     if (!user) {
-      throw new ApiError(401, "No User Found");
+      throw new ApiError(404, "No User Found");
     }
     req.user = user;
     next();
