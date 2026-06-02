@@ -3,7 +3,7 @@ import User from "./user.models";
 
 const subscriptionSchema = new Schema(
   {
-    subscribers: {
+    subscriber: {
       // Users who subscribe to the channel
       type: Schema.Types.ObjectId,
       ref: "User",
