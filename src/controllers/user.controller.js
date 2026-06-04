@@ -453,6 +453,27 @@ const getWatchHistry = asyncHandler(async (req, res) => {
     );
 });
 
+// Add to Watch History
+
+const addToWatchHistory = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+  if (!videoId.trim()) {
+    throw new ApiError(400, "Video Id is required");
+  }
+  await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $addToSet: { watchHistory: videoId }, // $addToSet operator adds a value to an array unless the value is already present, in which case it does nothing. This ensures that the same videoId is not added multiple times to the watchHistory array.
+    },
+    { new: true }
+  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, "Video added to watch history successfully", {})
+    );
+});
+
 export {
   registerUser,
   loginUser,
@@ -465,4 +486,5 @@ export {
   updateCoverImage,
   getUserChannelProfile,
   getWatchHistry,
+  addToWatchHistory,
 };

@@ -7,7 +7,7 @@ const app = express();
 app.use(
   cors({
     origin: process.env.CORS_URL,
-    credentials: true,
+    credentials: true, // Allow cookies to be sent in cross-origin requests
   })
 );
 app.use(express.json({ limit: "16kb" }));
