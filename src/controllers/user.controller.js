@@ -73,11 +73,11 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // upload on cloudinary
-  const cloudinaryUrlAvatar = await uploadFileToCloudinary(avatarLocalPath);
-  const cloudinaryUrlCoverImage =
+  const cloudinaryUrlAvatarFile = await uploadFileToCloudinary(avatarLocalPath);
+  const cloudinaryUrlCoverImageFile =
     await uploadFileToCloudinary(coverImageLocalPath);
 
-  if (!cloudinaryUrlAvatar) {
+  if (!cloudinaryUrlAvatarFile) {
     throw new ApiError(500, "Avatar Image Required");
   }
   console.log("Username : ", username);
@@ -87,8 +87,10 @@ const registerUser = asyncHandler(async (req, res) => {
   const user = await User.create({
     fullname,
     password,
-    avatar: cloudinaryUrlAvatar,
-    coverImage: cloudinaryUrlCoverImage ? cloudinaryUrlCoverImage : "",
+    avatar: cloudinaryUrlAvatarFile.secure_url,
+    coverImage: cloudinaryUrlCoverImage
+      ? cloudinaryUrlCoverImage.secure_url
+      : "",
     email,
     username: username.toLowerCase(),
   });
@@ -293,13 +295,13 @@ const updateAvatarImage = asyncHandler(async (req, res) => {
   if (!avatarImageLocalPath) {
     throw new ApiError(404, "Not Found");
   }
-  const cloudinaryUrl = await uploadFileToCloudinary(avatarImageLocalPath);
-  console.log("cloudinaryPath : ", cloudinaryUrl);
+  const cloudinaryFile = await uploadFileToCloudinary(avatarImageLocalPath);
+  console.log("cloudinaryPath : ", cloudinaryFile);
 
   const updatedUser = await User.findByIdAndUpdate(
     req.user?._id,
     {
-      $set: { avatar: cloudinaryUrl },
+      $set: { avatar: cloudinaryFile.secure_url },
     },
     {
       new: true,
@@ -320,13 +322,13 @@ const updateCoverImage = asyncHandler(async (req, res) => {
   if (!coverImageLocalPath) {
     throw new ApiError(404, "Not Found");
   }
-  const cloudinaryUrl = await uploadFileToCloudinary(coverImageLocalPath);
+  const cloudinaryFile = await uploadFileToCloudinary(coverImageLocalPath);
   console.log("cloudinaryPath : ", cloudinaryUrl);
 
   const updatedUser = await User.findByIdAndUpdate(
     req.user?._id,
     {
-      $set: { coverImage: cloudinaryUrl },
+      $set: { coverImage: cloudinaryFile.secure_url },
     },
     {
       new: true,
@@ -367,11 +369,11 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     },
     {
       $addFields: {
-        subscriberCount: { $size: subscribers },
-        channelSubscribedTo: { $size: subscribersTo },
+        subscriberCount: { $size: "$subscribers" },
+        channelSubscribedTo: { $size: "$subscribersTo" },
         isSubscribed: {
           $cond: {
-            if: { $in: [req.user?._id, subscribers] },
+            if: { $in: [req.user?._id, "$subscribers"] },
             then: true,
             else: false,
           },
@@ -382,8 +384,8 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       $project: {
         fullname: 1,
         username: 1,
-        subscribersCount: 1,
-        channelsSubscribedToCount: 1,
+        subscriberCount: 1,
+        channelSubscribedTo: 1,
         isSubscribed: 1,
         avatar: 1,
         coverImage: 1,
@@ -432,11 +434,11 @@ const getWatchHistry = asyncHandler(async (req, res) => {
                     avatar: 1,
                   },
                 },
-                {
-                  $addFields: { owner: { $first: $owner } },
-                },
               ],
             },
+          },
+          {
+            $addFields: { owner: { $first: "$owner" } }, // since owner is an array after lookup we need to convert it into object
           },
         ],
       },
