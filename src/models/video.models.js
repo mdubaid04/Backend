@@ -1,5 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
+import { Like } from "./like.models.js";
+import { Comment } from "./comment.models.js";
 
 const videoSchema = new Schema(
   {
@@ -47,6 +49,10 @@ const videoSchema = new Schema(
   },
   { timestamps: true }
 );
+videoSchema.pre("findByIdAndDelete", async function () {
+  await Like.deleteMany({ video: this._id });
+  await Comment.deleteMany({ video: this._id });
+});
 videoSchema.plugin(mongooseAggregatePaginate);
 
 const Video = mongoose.model("Video", videoSchema);

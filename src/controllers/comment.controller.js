@@ -70,14 +70,27 @@ const getVideoComments = asyncHandler(async (req, res) => {
       $unwind: "$owner",
     },
     {
+      $lookup: {
+        from: "likes",
+        localField: "_id",
+        foreignField: "comment",
+        as: "likes",
+      },
+    },
+    {
+      $addFields: {
+        likesCount: { $size: "$likes" },
+      },
+    },
+    {
       $sort: {
         [sortBy]: sortOrder === "asc" ? 1 : -1,
       },
     },
   ]);
   const options = {
-    page: parseInt(page, 10),
-    limit: parseInt(limit, 10),
+    page: parseInt(req.query.page) || 1,
+    limit: parseInt(req.query.limit) || 10,
   };
   const paginatedComments = await Comment.aggregatePaginate(comments, options);
   res
